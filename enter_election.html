@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Login</title>
+
+<style>
+body{
+    background:linear-gradient(135deg,#36d1dc,#5b86e5);
+    font-family:Poppins;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.card{
+    background:rgba(255,255,255,0.2);
+    backdrop-filter:blur(12px);
+    padding:40px;
+    border-radius:20px;
+    width:350px;
+    text-align:center;
+    color:white;
+    animation:slide 1s;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:none;
+    border-radius:8px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:white;
+    color:#5b86e5;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+a{color:white;}
+
+@keyframes slide{
+from{transform:translateY(50px);opacity:0;}
+to{opacity:1;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>Admin Login</h2>
+
+<form method="POST">
+    <select name="election_type" required>
+<option value="">Select Election</option>
+<option>Apartment</option>
+<option>Street</option>
+<option>College </option>
+</select>
+<input type="text" name="phone" placeholder="Phone" required>
+<input type="password" name="password" placeholder="Password" required>
+
+<button>Login</button>
+</form>
+
+<p><a href="/admin_register">Register Here</a></p>
+</div>
+
+</body>
+</html>

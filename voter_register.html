@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voter Dashboard</title>
+    <style>
+        body {
+            background: linear-gradient(135deg,#f7971e,#ffd200);
+            font-family: Poppins;
+            padding: 40px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .section-title {
+            margin-top: 40px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Ongoing Elections</h1>
+{% if available %}
+    {% for e in available %}
+    <div class="card">
+        <h3>{{ e.type }} (ID: {{ e.election_id }})</h3>
+        <p>Start: {{ e.start_time }} | End: {{ e.end_time }}</p>
+
+        <h4>Candidates</h4>
+        {% for c in candidates %}
+            <p>
+                {{ c.name }} — {{ c.symbol }}
+                <!-- Vote button (for ongoing election) -->
+                <form method="POST" action="/vote">
+                    <input type="hidden" name="election_id" value="{{ e.election_id }}">
+                    <input type="hidden" name="candidate_phone" value="{{ c.phone }}">
+                    <button type="submit">Vote</button>
+                </form>
+            </p>
+        {% endfor %}
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No ongoing elections for this election name/id.</p>
+{% endif %}
+
+<h1 class="section-title">Past Elections</h1>
+{% if held %}
+    {% for e in held %}
+    <div class="card">
+        <h3>{{ e.type }} (ID: {{ e.election_id }})</h3>
+        <p>Start: {{ e.start_time }} | End: {{ e.end_time }}</p>
+
+        <h4>Results</h4>
+        {% set key = e.election_id + "_" + loop.index0|string %}
+        {% for c in candidates %}
+            {% if results[key] is defined %}
+                <p>{{ c.name }} — {{ results[key][c.name] }} votes</p>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No past elections for this election name/id.</p>
+{% endif %}
+
+</body>
+</html>

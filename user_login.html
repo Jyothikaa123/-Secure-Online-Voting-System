@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Online Voting System</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Poppins, sans-serif;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    height:100vh;
+    color:white;
+    overflow:hidden;
+}
+
+.container{
+    text-align:center;
+    margin-top:120px;
+    animation:fadeIn 2s;
+}
+
+h1{
+    font-size:50px;
+}
+
+.cards{
+    margin-top:60px;
+    display:flex;
+    justify-content:center;
+    gap:30px;
+}
+
+.card{
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(10px);
+    padding:30px;
+    border-radius:20px;
+    width:220px;
+    cursor:pointer;
+    transition:.4s;
+}
+
+.card:hover{
+    transform:translateY(-10px) scale(1.05);
+    background:rgba(255,255,255,0.25);
+}
+
+@keyframes fadeIn{
+    from{opacity:0;transform:translateY(40px);}
+    to{opacity:1;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1 id="typing"></h1>
+    <p>Select Your Role</p>
+
+    <div class="cards">
+        <div class="card" onclick="location.href='/admin_login'">
+            <h2>Admin</h2>
+        </div>
+
+        <div class="card" onclick="location.href='/voter_login'">
+            <h2>Voter</h2>
+        </div>
+
+        <div class="card" onclick="location.href='/user_login'">
+            <h2>Candidate</h2>
+        </div>
+    </div>
+</div>
+
+<script>
+const text="Hi 👋 Welcome to Online Voting System";
+let i=0;
+
+function type(){
+    if(i<text.length){
+        document.getElementById("typing").innerHTML+=text.charAt(i);
+        i++;
+        setTimeout(type,50);
+    }
+}
+type();
+</script>
+
+</body>
+</html>

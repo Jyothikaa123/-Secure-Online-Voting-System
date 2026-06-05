@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Candidate Dashboard</title>
+
+<style>
+body{
+background:linear-gradient(135deg,lab(39.45% 69.92 -95.86 / 0.852),hwb(199 13% 13% / 0.858));
+font-family:Poppins;
+color:white;
+padding:40px;
+}
+
+.container{
+max-width:800px;
+margin:auto;
+}
+
+.card{
+background:rgba(255,255,255,0.2);
+backdrop-filter:blur(12px);
+padding:25px;
+margin:25px 0;
+border-radius:18px;
+}
+
+.vote{
+background:rgba(0,0,0,0.25);
+padding:12px;
+border-radius:10px;
+margin-top:10px;
+display:flex;
+justify-content:space-between;
+font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<div class="card">
+<h2>Enroll in Election</h2>
+
+<form method="POST" action="/candidate_enroll">
+<input name="election_name" placeholder="Election Name" required>
+<input name="election_id" placeholder="Election ID" required>
+
+<button type="submit">Enroll</button>
+</form>
+
+</div>
+
+<h1>Your Election Results</h1>
+
+{% for e in elections %}
+
+<div class="card">
+
+<h2>Election ID: {{e.election_id}}</h2>
+<p>Type: {{e.type}}</p>
+
+<div class="vote">
+<span>Your Votes</span>
+<span>{{results[e.election_id]}}</span>
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</body>
+</html>

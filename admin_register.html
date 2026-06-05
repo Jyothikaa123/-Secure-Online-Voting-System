@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+
+<style>
+
+body{
+background:linear-gradient(135deg,#667eea,#764ba2);
+font-family:Poppins;
+color:white;
+padding:40px;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+}
+
+.card{
+background:rgba(255,255,255,0.15);
+backdrop-filter:blur(12px);
+padding:25px;
+margin:25px 0;
+border-radius:18px;
+}
+
+input,button{
+padding:10px;
+margin:8px 0;
+border:none;
+border-radius:8px;
+width:100%;
+}
+
+button{
+background:white;
+color:#764ba2;
+font-weight:bold;
+cursor:pointer;
+}
+
+.result{
+background:rgba(0,0,0,0.2);
+padding:10px;
+margin:6px 0;
+border-radius:10px;
+display:flex;
+justify-content:space-between;
+}
+
+h1{text-align:center;}
+
+</style>
+</head>
+
+<body>
+<!-- PROFILE NAVBAR (ADD ONLY THIS) -->
+<div style="position:absolute; top:20px; right:30px;">
+
+<div onclick="toggleMenu()" style="cursor:pointer;">
+<img src="https://cdn-icons-png.flaticon.com/512/847/847969.png"
+width="40">
+</div>
+
+<div id="profileMenu"
+style="
+display:none;
+position:absolute;
+right:0;
+background:white;
+color:black;
+border-radius:10px;
+overflow:hidden;
+min-width:180px;
+">
+
+<a href="/admin_profile" style="display:block;padding:10px;text-decoration:none;">👤 Profile</a>
+<a href="/create_election_page" style="display:block;padding:10px;text-decoration:none;">➕ Create Election</a>
+<a href="/view_results" style="display:block;padding:10px;text-decoration:none;">📊 View Results</a>
+<a href="/logout" style="display:block;padding:10px;text-decoration:none;">🚪 Logout</a>
+
+</div>
+</div>
+
+<script>
+function toggleMenu(){
+let menu=document.getElementById("profileMenu");
+menu.style.display = menu.style.display=="block" ? "none":"block";
+}
+</script>
+<div class="container">
+
+<h1>Admin Dashboard</h1>
+
+<!-- CREATE ELECTION -->
+<div class="card">
+<h2>Create Election</h2>
+
+<form action="/create_election" method="POST">
+<select name="election_type" required>
+<option value="">Select Election Type</option>
+<option value="Apartment Election">Apartment Election</option>
+<option value="College Election">College Election</option>
+<option value="School Election">School Election</option>
+<option value="Organization Election">Organization Election</option>
+</select>
+<input name="election_name" placeholder="Election Name " required >
+<input name="election_id" placeholder="Election ID" required>
+
+<label>Start Time</label>
+<input type="datetime-local" name="start_time" required>
+
+<label>End Time</label>
+<input type="datetime-local" name="end_time" required>
+
+<button>Create Election</button>
+
+</form>
+</div>
+
+
+<!-- SHOW ALL ELECTIONS -->
+{% for e in elections %}
+
+<div class="card">
+
+<h2>{{e.election_type}} {{e.election_name}} (ID: {{e.election_id}})</h2>
+
+<p>Start: {{e.start_time}}</p>
+<p>End: {{e.end_time}}</p>
+
+<h3>Candidates</h3>
+
+{% for c in election_candidates[e.election_id] %}
+<div class="result">
+<span>{{c.name}}</span>
+<span>{{c.symbol}}</span>
+</div>
+{% endfor %}
+
+<h3>Results</h3>
+
+{% for name, vote in results[e.election_id].items() %}
+<div class="result">
+<span>{{name}}</span>
+<span>Votes: {{vote}}</span>
+</div>
+{% endfor %}
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</body>
+</html>

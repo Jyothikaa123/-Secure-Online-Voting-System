@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Register</title>
+
+<style>
+body{
+background:linear-gradient(135deg,#ff9966,#ff5e62);
+font-family:Poppins;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.card{
+background:rgba(255,255,255,0.2);
+backdrop-filter:blur(12px);
+padding:40px;
+border-radius:20px;
+width:360px;
+color:white;
+text-align:center;
+}
+
+input,button{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
+}
+
+button{
+background:white;
+color:#ff5e62;
+font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>Admin Registration</h2>
+
+<form method="POST">
+
+<input name="name" placeholder="Admin Name" required>
+<input name="phone" placeholder="Phone Number" required>
+<input type="password" name="password" placeholder="Password" required>
+
+<button>Register</button>
+
+</form>
+</div>
+
+</body>
+</html>

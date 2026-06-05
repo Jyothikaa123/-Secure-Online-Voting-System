@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Candidate Register</title>
+
+<style>
+body{
+background:linear-gradient(135deg,#ff512f,#dd2476);
+font-family:Poppins;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.card{
+background:rgba(255,255,255,0.2);
+backdrop-filter:blur(12px);
+padding:40px;
+border-radius:20px;
+width:360px;
+color:white;
+text-align:center;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
+}
+
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:white;
+color:#dd2476;
+font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>Candidate Registration</h2>
+
+<form method="POST">
+<input name="name" placeholder="Candidate Name">
+<input name="phone" placeholder="Phone">
+<input name="symbol" placeholder="Election Symbol">
+<input type="password" name="password" placeholder="Password">
+<select name="details" id="detailsSelect" onchange="showInput()" required>
+<option value="">Select ID Type</option>
+<option value="Flat Number">Flat Number</option>
+<option value="House Number">House Number</option>
+<option value="College ID">College ID</option>
+<option value="School ID">School ID</option>
+</select>
+
+<input type="text" id="detailInput" name="detail_value">
+<button>Register</button>
+</form>
+
+</div>
+
+<script>
+function showInput() {
+
+    let select = document.getElementById("detailsSelect");
+    let input = document.getElementById("detailInput");
+
+    if(select.value !== ""){
+        input.style.display = "block";
+        input.placeholder = "Enter " + select.value;
+        input.required = true;
+    }else{
+        input.style.display = "none";
+        input.required = false;
+    }
+}
+</script>
+
+
+
+</body>
+</html>

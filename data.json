@@ -1,0 +1,463 @@
+from flask import Flask, render_template, request, redirect,session
+from datetime import datetime  
+import json
+import os
+
+app = Flask(__name__)
+app.secret_key = "mysecretkey123"
+DATA_FILE = "data.json"
+
+
+# =====================================
+# Create JSON file if not exists
+# =====================================
+if not os.path.exists(DATA_FILE):
+    with open(DATA_FILE, "w") as f:
+        json.dump({
+            "admins": [],
+            "voters": [],
+            "candidates": [],
+            "elections": [],
+             "candidate_enrollments":[],
+            "votes":[]
+            
+        }, f, indent=4)
+
+
+# =====================================
+# Helper Functions
+# =====================================
+def load_data():
+    try:
+       with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return {
+            "admins": [],
+            "voters": [],
+            "candidates": [],
+            "elections": [],
+            "votes": []
+        }
+
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+
+# =====================================
+# HOME PAGE
+# =====================================
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+
+# =====================================
+# ADMIN REGISTER (CREATE ELECTION)
+# =====================================
+@app.route("/admin_register", methods=["GET","POST"])
+def admin_register():
+
+    if request.method == "POST":
+
+        data = load_data()
+
+        admin = {
+            "name": request.form["name"],
+            "phone": request.form["phone"],
+            "password": request.form["password"]
+        }
+
+        data["admins"].append(admin)
+        save_data(data)
+
+        return redirect("/admin_login")
+
+    return render_template("admin_register.html")
+# =====================================
+# ADMIN LOGIN
+# =====================================
+@app.route("/admin_login", methods=["GET", "POST"])
+def admin_login():
+
+    if request.method == "POST":
+        data = load_data()
+
+        phone = request.form["phone"]
+        password = request.form["password"]
+
+        for admin in data["admins"]:
+            if admin["phone"] == phone and admin["password"] == password:
+                session["admin_phone"] = phone
+                return redirect("/admin_dashboard")
+
+        return "❌ Invalid Admin Login"
+
+    return render_template("admin_login.html")
+
+
+# =====================================
+# VOTER REGISTER
+# =====================================
+@app.route("/voter_register", methods=["GET", "POST"])
+def voter_register():
+
+    if request.method == "POST":
+        data = load_data()
+
+        voter = {
+            "name": request.form["name"],
+            "phone": request.form["phone"],
+            "password": request.form["password"],
+            "id_type": request.form["details"],
+            "id_value": request.form.get("detail_value","")
+        }
+
+        data["voters"].append(voter)
+        save_data(data)
+
+        return redirect("/voter_login")
+
+    return render_template("voter_register.html")
+
+
+# =====================================
+# VOTER LOGIN
+# =====================================
+# VOTER LOGIN
+@app.route("/voter_login", methods=["GET", "POST"])
+def voter_login():
+    if request.method == "POST":
+        data = load_data()
+        phone = request.form["phone"]
+        password = request.form["password"]
+
+        for voter in data["voters"]:
+            if voter["phone"] == phone and voter["password"] == password:
+                session["voter_phone"] = voter["phone"]  # <- track voter
+                return redirect("/enter_election")
+
+        return "❌ Invalid Voter Login"
+
+    return render_template("voter_login.html")
+
+@app.route("/vote/<candidate_phone>/<election_id>")
+def vote(candidate_phone, election_id):
+    if "voter_phone" not in session:
+        return redirect("/voter_login")
+
+    data = load_data()
+    voter_phone = session["voter_phone"]
+
+    # Prevent double voting
+    for v in data["votes"]:
+        if v["voter_phone"] == voter_phone and v["election_id"] == election_id:
+            return "❌ You have already voted in this election!"
+
+    # Save the vote
+    vote_record = {
+        "voter_phone": voter_phone,
+        "candidate_phone": candidate_phone,
+        "election_id": election_id
+    }
+
+    data["votes"].append(vote_record)
+    save_data(data)
+
+    return "✅ Your vote has been cast successfully!"
+# =====================================
+# CANDIDATE REGISTER
+# =====================================
+@app.route("/user_register", methods=["GET", "POST"])
+def user_register():
+
+    if request.method == "POST":
+        data = load_data()
+
+        candidate = {
+            "name": request.form["name"],
+            "phone": request.form["phone"],
+            "symbol": request.form["symbol"],
+            "password": request.form["password"],
+            "id_type": request.form["details"],
+            "id_value": request.form.get("detail_value","")
+        }
+
+        data["candidates"].append(candidate)
+        save_data(data)
+
+        return redirect("/user_login")
+
+    return render_template("user_register.html")
+
+
+# =====================================
+# CANDIDATE LOGIN
+# =====================================
+@app.route("/user_login", methods=["GET", "POST"])
+def user_login():
+
+    if request.method == "POST":
+        data = load_data()
+
+        phone = request.form["phone"]
+        password = request.form["password"]
+
+        for candidate in data["candidates"]:
+            if candidate["phone"] == phone and candidate["password"] == password:
+                session["candidate_phone"] = candidate["phone"]
+                return redirect("/user_dashboard")
+
+        return "❌ Invalid Candidate Login"
+
+    return render_template("user_login.html")
+# =====================================
+# admin Dashboard
+# =====================================
+@app.route("/admin_dashboard")
+def admin_dashboard():
+
+    if "admin_phone" not in session:
+        return redirect("/admin_login")
+
+    data = load_data()
+
+    elections = data["elections"]
+    candidates = data["candidates"]
+    votes = data["votes"]
+
+    results = {}
+    election_candidates = {}
+
+    for election in elections:
+
+        eid = election["election_id"]
+
+        results[eid] = {}
+        election_candidates[eid] = []
+
+        # all candidates (you can filter later if needed)
+        for c in candidates:
+            election_candidates[eid].append(c)
+            results[eid][c["name"]] = 0
+
+        # count votes
+        for v in votes:
+            if v["election_id"] == eid:
+                for c in candidates:
+                    if c["phone"] == v["candidate_phone"]:
+                        results[eid][c["name"]] += 1
+
+    return render_template(
+        "admin_dashboard.html",
+        elections=elections,
+        results=results,
+        election_candidates=election_candidates
+    )
+# =====================================
+#Create election
+# =====================================
+@app.route("/create_election", methods=["POST"])
+def create_election():
+
+    if "admin_phone" not in session:
+        return redirect("/admin_login")
+
+    data = load_data()
+
+    election = {
+        
+       "election_type": request.form["election_type"],
+        "election_name": request.form["election_name"],
+        "election_id": request.form["election_id"],
+        "start_time": request.form["start_time"],
+         "end_time": request.form["end_time"]
+
+    }
+
+    data["elections"].append(election)
+    save_data(data)
+
+    return redirect("/admin_dashboard")
+# =====================================
+# ENTER ELECTION (VOTER FILTER PAGE)
+# =====================================
+@app.route("/enter_election", methods=["GET","POST"])
+def enter_election():
+
+    if request.method == "POST":
+
+        data = load_data()
+
+        election_name = request.form["election_name"]
+        election_id = request.form["election_id"]
+
+        matched = []
+
+        for e in data["elections"]:
+            if (
+                e["election_name"] == election_name and
+                e["election_id"] == election_id
+            ):
+                matched.append(e)
+
+        session["selected_elections"] = matched
+        session["selected_name"] = election_name
+        session["selected_id"] = election_id
+
+        return redirect("/voter_dashboard")
+
+    return render_template("enelection.html")   
+# =====================================
+# Voter  Dashboard
+# ===================================== 
+
+@app.route("/voter_dashboard")
+def voter_dashboard():
+
+    if "selected_elections" not in session:
+        return redirect("/enter_election")
+
+    data = load_data()
+
+    candidates = data["candidates"]
+    votes = data["votes"]
+
+    selected = session["selected_elections"]
+
+    now = datetime.now()
+
+    available = []
+    held = []
+    results = {}
+
+    for index, e in enumerate(selected):
+
+        try:
+            start = datetime.fromisoformat(e["start_time"])
+            end = datetime.fromisoformat(e["end_time"])
+        except:
+              continue
+
+        unique_key = f"{e['election_id']}_{index}"
+
+        if start <= now <= end:
+           available.append(e)
+
+        elif now > end:
+             held.append(e)
+
+        results[unique_key] = {}
+
+        for c in candidates:
+            results[unique_key][c["name"]] = 0
+
+        for v in votes:
+            if v["election_id"] == e["election_id"]:
+                for c in candidates:
+                    if c["phone"] == v["candidate_phone"]:
+                        results[unique_key][c["name"]] += 1
+
+    return render_template(
+        "voter_dashboard.html",
+        available=available,
+        held=held,
+        results=results,
+        candidates=candidates
+    )
+
+# =====================================
+# Candidate Enroll in Election
+# =====================================
+@app.route("/candidate_enroll", methods=["POST"])
+def candidate_enroll():
+
+    if "candidate_phone" not in session:
+        return redirect("/user_login")
+
+    data = load_data()
+
+    election_name = request.form["election_name"]
+    election_id = request.form["election_id"]
+
+    candidate_phone = session["candidate_phone"]
+
+    # check election validity
+    valid = False
+    for e in data["elections"]:
+        if e["type"] == election_name and e["election_id"] == election_id:
+            valid = True
+            break
+
+    if not valid:
+        return "❌ Invalid Election Name or ID"
+
+    # prevent duplicate enrollment
+    for enr in data["candidate_enrollments"]:
+        if (
+            enr["candidate_phone"] == candidate_phone and
+            enr["election_id"] == election_id
+        ):
+            return redirect("/user_dashboard")
+
+    enrollment = {
+        "candidate_phone": candidate_phone,
+        "election_name": election_name,
+        "election_id": election_id
+    }
+
+    data["candidate_enrollments"].append(enrollment)
+    save_data(data)
+
+    return redirect("/user_dashboard")        
+# =====================================
+# Candidate Dashboard
+# =====================================    
+@app.route("/user_dashboard")
+def user_dashboard():
+
+    if "candidate_phone" not in session:
+        return redirect("/user_login")
+
+    data = load_data()
+
+    candidate_phone = session["candidate_phone"]
+
+    enrollments = data.get("candidate_enrollments", [])
+    elections = data["elections"]
+    votes = data["votes"]
+
+    participated = []
+    results = {}
+
+    # find enrolled elections
+    for enr in enrollments:
+        if enr["candidate_phone"] == candidate_phone:
+
+            for e in elections:
+                if e["election_id"] == enr["election_id"]:
+                    participated.append(e)
+
+                    # count votes
+                    count = 0
+                    for v in votes:
+                        if (
+                            v["candidate_phone"] == candidate_phone
+                            and v["election_id"] == e["election_id"]
+                        ):
+                            count += 1
+
+                    results[e["election_id"]] = count
+
+    return render_template(
+        "user_dashboard.html",
+        elections=participated,
+        results=results
+    )
+# =====================================
+# RUN APP
+# =====================================
+if __name__ == "__main__":
+    app.run(debug=True)
